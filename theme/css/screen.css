@@ -9,6 +9,15 @@ body {
   font-family: Lobster, Amethysta, serif;
   font-weight: normal;
 }
+.right {
+  float: right;
+}
+.twentyfour, .twentyfour * {
+  font-size: 24px;
+}
+.thirty, .thirty * {
+  font-size: 30px;
+}
 
 div.presentation {
   position: absolute;
@@ -28,7 +37,6 @@ div.slides, body.expose div.slides.nocontext {
   display: block;
   background-color: #f0f0f0;
 }
-
 
 div.slides.nocontext {
   width: 900px;
