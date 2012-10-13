@@ -122,12 +122,11 @@ And here comes <span class="sigma">sigma.js</span>
 
 <div class="twentyfour" style="padding-top: 100px; padding-left: 120px;">
 
- - written in JavaScript
+ - written in **JavaScript**
  - dedicated to **graph drawing** - and nothing else
- - scalable (*until ~2000 nodes ~30000 edges*)
- - fluid (frames are injected during the drawing process)
+ - **scalable** (Canvas, Frames-injection)
  - open-source
- - interactivity / user oriented
+ - **interactivity** oriented
 
 </div>
 
@@ -166,7 +165,7 @@ Quickly, some use cases:
 ---
 
 <span class="thirty">**Movie Galaxies**:</span>
---------------------------------------------------------------------
+-----------------------------------------------
 
 ![Movie Galaxies screenshot](img/moviegalaxies.png)
 
@@ -184,51 +183,147 @@ Now, let's explore some data!
 
 ---
 
+**Load the comments**
+---------------------
 
+Here is the URL of a comments page:
+
+        http://www.reddit.com/r/funny/comments/11egv1/snakes_on_a_plane/
+                             (subreddit)      (post id)    (title)
+
+With the post ID, we can get comments from Reddit API:
+
+    var postId = '11egv1';
+
+    $.ajax({
+      url: 'http://www.reddit.com/comments/'+postId+'.json?jsonp=?',
+      type: 'GET',
+      dataType: 'jsonp',
+      success: function(data){
+        getGraph(data);
+      }
+    });
+
+---
+
+**Get comments:**
+-----------------
+
+![Reddit Comments screenshot](img/getcomments.png)
+
+---
+
+**Get comments ([doc](https://github.com/reddit/reddit/wiki/API)):**
+--------------------------------------------------------------------
+
+Comments are sent in a tree, with three types of nodes:
+
+ - `t1` (describes one comment)
+ - `Listing` (contains an array of `t1` nodes)
+ - `more` (indicates that there are more comments than the API can send)
+
+Every `Listing` node has a `children` that contains an array of `t1` or a `more` node.
+
+If a comment has *replies*, it has a `replies` attribute containing a `Listing` node.
+
+Finally, the root of the tree contains two `Listing` nodes:
+
+ - One with data about the post
+ - One with the first level comments
+
+---
+
+**Construct the graph (1):**
+----------------------------
+
+    var graph = { nodes: [], edges: [] },
+        nodesIndex = {}, edgesIndex = {};
+
+    function getGraph(data) {
+      parseNode(data[1], null, graph);
+
+      return graph;
+    }
+
+---
+
+**Construct the graph (2):**
+----------------------------
+
+    function parseNode(node, parentNodeId) {
+      if (node.kind === 'Listing')
+        node.data.children.forEach(function(subnode){
+          parseNode(subnode, parentNode);
+        });
+      else if (node.kind === 't1') {
+        var nodeId = node.data.author;
+
+        if (!nodesIndex[nodeId]) {
+          nodesIndex[nodeId] =  { id: nodeId };
+          graph.nodes.push(nodesIndex[nodeId]);
+        }
+
+        if (parentNodeId) {
+          var edgeId = parentNodeId + '_' + nodeId;
+
+          if (!edgesIndex[edgeId]) {
+            edgesIndex[edgeId] = { id: edgeId, source: parentNodeId, target: nodeId };
+            graph.edges.push(edgesIndex[edgeId]);
+          }
+        }
+
+        if (node.data.replies)
+          parseNode(node.data.replies, nodeId);
+      }
+    }
 
 ---
 
 **Play with <span class="sigma">sigma.js</span>:**
-======================================================
+==================================================
 
 ---
 
-**Fill the graph (1):**
------------------------
+**Instanciate <span class="sigma">sigma.js</span>:**
+----------------------------------------------------
 
-Assume we have an object `graph` describing our graph:
+HTML:
 
-    var graph = {
-      nodes: [
-        {
-          id: 'node1',
-          label: 'Node 1'
-        //  [...]
-        },
-        {
-          id: 'node2',
-          label: 'Node 2'
-        //  [...]
-        }
-        //[...]
-      ],
-      edges: [
-        {
-          source: 'node1',
-          target: 'node2',
-          id: 'edge1'
-        //  [...]
-        }
-        //[...]
-      ]
-    };
+    <!-- [...] -->
+    <div id="sigma-container" width="400px" height="400px"></div>
+    <!-- [...] -->
+
+JavaScript:
+
+    var sigInst = sigma.init(document.getElementById('sigma-container'));
 
 ---
 
-**Fill the graph (2):**
+**Customize our instance:**
+---------------------------
+
+    sigInst.drawingProperties({
+      defaultLabelColor: '#000',
+      defaultLabelSize: 14,
+      defaultEdgeType: 'curve'
+    }).graphProperties({
+      minNodeSize: 0.5,
+      maxNodeSize: 5
+    });
+
+Available customization methods:
+
+ - `configProperties`
+ - `drawingProperties`
+ - `mouseProperties`
+ - `graphProperties`
+
+---
+
+**Fill the graph:**
 -----------------------
 
-Then, here is the code to show our graph in a <span class="sigma">sigma.js</span> instance (named `sigInst`):
+With `graph` the object we filled earlier:
 
     var i, n, e,
         N = graph.nodes.length,
@@ -268,8 +363,14 @@ Then, here is the code to show our graph in a <span class="sigma">sigma.js</span
 **Modify the nodes:**
 ---------------------
 
+The methods `iterNodes` and `iterEdges` make possible to get attributes or modify nodes and edges:
+
     sigInst.iterNodes(function(node) {
       node.color = '#fc0';
+    });
+
+    sigInst.iterEdges(function(edge) {
+      edge.color = '#333';
     });
 
 ---
@@ -277,12 +378,16 @@ Then, here is the code to show our graph in a <span class="sigma">sigma.js</span
 **Modify specified nodes:**
 ---------------------------
 
-    // Here is an array containing ids of nodes if the graph:
-    var ids = ['node1', 'node2'];
+You can specify as second argument an array of IDs to iterate only on the specified nodes/edges:
 
     sigInst.iterNodes(function(node) {
       node.color = '#fc0';
-    }, ids);
+    }, ['node1', 'node2']);
+
+    sigInst.iterEdges(function(edge) {
+      edge.color = '#333';
+    }, ['edge1']);
+
 
 ---
 
@@ -308,5 +413,21 @@ Available events:
 
 ---
 
-**Catching mouse hover nodes:**
--------------------------------
+**Demo Time!**
+==============
+
+---
+
+**More info:**
+--------------
+
+Resources about <span class="sigma">sigma.js</span>:
+
+ - <span class="sigma">[sigma.js website](http://sigmajs.org/)</span>
+ - [sigmajs](http://twitter.com/sigmajs) on **twitter**
+ - [sources](http://github.com/jacomyal/sigma.js) on **github**
+
+Also:
+
+ - Presentation available at: [http://jcml.fr/~jacomyal/osdc2012-presentation](http://jcml.fr/~jacomyal/osdc2012-presentation)
+ - Demo available at: [http://jcml.fr/~jacomyal/osdc2012-demo](http://jcml.fr/~jacomyal/osdc2012-demo)
