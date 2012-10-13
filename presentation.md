@@ -36,6 +36,29 @@ What is <span class="sigma">sigma.js</span> ?
 
 ---
 
+Why visualize graphs?
+---------------------
+
+"A well-designed visualization tool can allow the user to see structure in a graphed data set that is difficult or impossible to see in its raw form"
+
+<div class="right">some guy from the internet - <a href="http://warriors.eecs.umich.edu/viz_tools/">link</a></div>
+
+<br>
+<br>
+
+**Some examples:**
+
+Visualising your ego-centered network from social networks:
+
+ - [Linkedin InMaps](http://inmaps.linkedinlabs.com/)
+ - [NameGenDev for Facebook](https://apps.facebook.com/namegendev/)
+
+Mapping the Web:
+
+ - [Linkfluence Web maps](http://us.linkfluence.net/insights-2-0/atlas/)
+
+---
+
 A *very* brief historic of <br> **graph drawing tools**
 =======================================================
 
@@ -132,8 +155,8 @@ And here comes <span class="sigma">sigma.js</span>
 
 ---
 
-Quickly, some use cases:
-========================
+*Quickly, some "real life" examples*
+====================================
 
 ---
 
@@ -222,7 +245,7 @@ Comments are sent in a tree, with three types of nodes:
  - `Listing` (contains an array of `t1` nodes)
  - `more` (indicates that there are more comments than the API can send)
 
-Every `Listing` node has a `children` that contains an array of `t1` or a `more` node.
+Every `Listing` node has an attribute `children` that contains an array of `t1` or a `more` node.
 
 If a comment has *replies*, it has a `replies` attribute containing a `Listing` node.
 
@@ -236,9 +259,14 @@ Finally, the root of the tree contains two `Listing` nodes:
 **Construct the graph (1):**
 ----------------------------
 
+    // Here is our graph: An array of nodes and an array of edges.
+    // Each node must have at least an ID, and each edge must have
+    // at least an ID, a source and a target (those are node IDs):
     var graph = { nodes: [], edges: [] },
         nodesIndex = {}, edgesIndex = {};
 
+
+    // Let's detail the process to create the graph:
     function getGraph(data) {
       parseNode(data[1], null, graph);
 
@@ -427,7 +455,7 @@ Resources about <span class="sigma">sigma.js</span>:
  - [sigmajs](http://twitter.com/sigmajs) on **twitter**
  - [sources](http://github.com/jacomyal/sigma.js) on **github**
 
-Also:
+Also (soon, at least):
 
  - Presentation available at: [http://jcml.fr/~jacomyal/osdc2012-presentation](http://jcml.fr/~jacomyal/osdc2012-presentation)
  - Demo available at: [http://jcml.fr/~jacomyal/osdc2012-demo](http://jcml.fr/~jacomyal/osdc2012-demo)
